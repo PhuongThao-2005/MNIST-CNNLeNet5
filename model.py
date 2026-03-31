@@ -147,37 +147,6 @@ class LeNet5Improved(nn.Module):
 
     def forward(self, x):
         return self.classifier(self.features(x))
-    
-#  Registry + factory function
-MODEL_REGISTRY = {
-    ("handwritten",   "baseline") : LeNet5,
-    ("handwritten",   "custom")   : LeNet5_Handwritten,
-    ("handwritten",   "improved") : LeNet5Improved,
-    ("fashion", "baseline") : LeNet5,
-    ("fashion", "custom")   : LeNet5_Fashion,
-    ("fashion", "improved") : LeNet5Improved,
-    ("medical", "baseline") : LeNet5,
-    ("medical", "custom")   : LeNet5_Medical,
-    ("medical", "improved") : LeNet5Improved,
-}
-
-
-def get_model(dataset: str, variant: str, num_classes: int) -> nn.Module:
-    """
-    Factory - trả về model đúng với dataset và variant.
-
-    Args:
-        dataset    : 'handwritten' | 'fashion' | 'medical'
-        variant    : 'baseline' | 'custom' | 'improved' 
-        num_classes: số lớp đầu ra
-    """
-    key = (dataset.lower(), variant.lower())
-    if key not in MODEL_REGISTRY:
-        raise ValueError(
-            f"Không tìm thấy model cho key={key}.\n"
-            f"Các key hợp lệ: {list(MODEL_REGISTRY.keys())}"
-        )
-    return MODEL_REGISTRY[key](num_classes=num_classes)
 
 if __name__ == "__main__":
     dummy = torch.zeros(2, 1, 32, 32)
