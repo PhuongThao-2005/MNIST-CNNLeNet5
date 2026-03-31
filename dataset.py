@@ -88,19 +88,19 @@ def get_all_datasets(batch_size: int = BATCH_SIZE):
     """
     Trả về dict:
     {
-      "mnist":   (train_loader, test_loader, class_names, num_classes),
+      "handwritten":   (train_loader, test_loader, class_names, num_classes),
       "fashion": (...),
       "medical": (...),
     }
     """
-    mnist_train,   mnist_test,   mnist_classes   = get_handwritten_mnist(batch_size)
+    handwritten_train, handwritten_test, handwritten_classes   = get_handwritten_mnist(batch_size)
     fashion_train, fashion_test, fashion_classes = get_fashion_mnist(batch_size)
     medical_train, medical_test, medical_classes = get_medical_mnist(batch_size)
 
     return {
-        "mnist": {
-            "train": mnist_train, "test": mnist_test,
-            "classes": mnist_classes, "num_classes": len(mnist_classes),
+        "handwritten": {
+            "train": handwritten_train, "test": handwritten_test,
+            "classes": handwritten_classes, "num_classes": len(handwritten_classes),
         },
         "fashion": {
             "train": fashion_train, "test": fashion_test,
