@@ -1,6 +1,9 @@
+import copy
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import os
 
 from config import DEVICE, EPOCHS, LEARNING_RATE, DATASETS
 
@@ -29,6 +32,7 @@ def train_model(
     num_classes : int,
     epochs      : int   = EPOCHS,
     lr          : float = LEARNING_RATE,
+    save_dir    : str   = "models",
 ):
     """
     Train một model (dataset x variant) và trả về (model, history).
@@ -38,7 +42,7 @@ def train_model(
     print(f"  Dataset : {dataset.upper():<10}  Variant : {variant.upper()}")
     print(f"{'='*62}")
 
-    model     = get_model(dataset, variant, num_classes).to(DEVICE)
+    model = model.to(DEVICE)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
     # StepLR: giảm lr × 0.5 mỗi 10 epoch
@@ -49,7 +53,12 @@ def train_model(
     print(f"  Epochs  : {epochs}   LR: {lr}")
     print("-"*62)
 
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"{dataset}_{variant}.pth")
+
     history = {"train_acc": [], "test_acc": [], "loss": []}
+    best_acc        = 0.0
+    best_state_dict = None
 
     for epoch in range(1, epochs + 1):
         model.train()
@@ -71,13 +80,21 @@ def train_model(
         history["test_acc"].append(test_acc)
         history["loss"].append(total_loss)
 
+        # lưu best weights
+        if test_acc > best_acc:
+            best_acc        = test_acc
+            best_state_dict = copy.deepcopy(model.state_dict())
+            torch.save(best_state_dict, save_path)
+
         print(
             f"Epoch {epoch:02d}/{epochs}"
             f"  Loss: {total_loss:8.2f}"
             f"  Train: {train_acc:.4f}"
             f"  Test : {test_acc:.4f}"
+            + (" <-  best" if test_acc == best_acc else "")
         )
 
-    best = max(history["test_acc"])
-    print(f"\n Best Test Acc [{variant}] : {best:.4f}")
+    # load lại best weights trước khi trả về
+    model.load_state_dict(best_state_dict)
+    print(f"\n  Best Test Acc [{variant}] : {best_acc:.4f}  ->  saved to {save_path}")
     return model, history
