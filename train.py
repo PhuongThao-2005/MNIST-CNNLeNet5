@@ -25,18 +25,18 @@ def evaluate(model: nn.Module, loader: torch.utils.data.DataLoader):
 
 
 def train_model(
+    model,
     train_loader,
     test_loader,
     dataset     : str,
     variant     : str,
-    num_classes : int,
     epochs      : int   = EPOCHS,
     lr          : float = LEARNING_RATE,
     save_dir    : str   = "models",
 ):
     """
-    Train một model (dataset x variant) và trả về (model, history).
-    epochs lấy từ DATASETS config per-dataset khi gọi từ train_all().
+    Train model và lưu trọng số tốt nhất (best test acc) vào save_dir.
+    Trả về (model đã load best weights, history).
     """
     print(f"\n{'='*62}")
     print(f"  Dataset : {dataset.upper():<10}  Variant : {variant.upper()}")
