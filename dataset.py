@@ -20,7 +20,7 @@ def _medical_transform(img_size: int = 32) -> transforms.Compose:
     Transform cho medical dataset
     """
     return transforms.Compose([
-        # transforms.Grayscale(num_output_channels=1),  # chuyển ảnh màu → ảnh xám (1 channel)
+        transforms.Grayscale(num_output_channels=1),  # chuyển ảnh màu → ảnh xám (1 channel)
         transforms.Resize((img_size, img_size)),      # resize về 32x32
         transforms.ToTensor(),                        # chuyển sang tensor
         transforms.Normalize((0.5,), (0.5,)),         # chuẩn hoá [-1, 1]
