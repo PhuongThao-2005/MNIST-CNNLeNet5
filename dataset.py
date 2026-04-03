@@ -1,4 +1,4 @@
-from torch.utils.data import DataLoader, random_split  # DataLoader: tạo batch, random_split: chia dataset
+from torch.utils.data import DataLoader, random_split  # DataLoader: tạo batch; random_split: chia dataset
 from torchvision import datasets, transforms          # datasets: MNIST, FashionMNIST; transforms: tiền xử lý ảnh
 import torch
 
@@ -17,7 +17,7 @@ def _base_transform(img_size: int = 32) -> transforms.Compose:
 
 def _medical_transform(img_size: int = 32) -> transforms.Compose:
     """
-    Transform cho medical dataset (ảnh RGB → grayscale)
+    Transform cho medical dataset
     """
     return transforms.Compose([
         transforms.Grayscale(num_output_channels=1),  # chuyển ảnh màu → ảnh xám (1 channel)
@@ -44,7 +44,7 @@ def get_handwritten_mnist(batch_size: int = BATCH_SIZE):
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,  num_workers=2, pin_memory=True)
     test_loader  = DataLoader(test_ds,  batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
 
-    return train_loader, test_loader, cfg["class_names"]  # trả về thêm tên class
+    return train_loader, test_loader, cfg["class_names"]
 
 
 def get_fashion_mnist(batch_size: int = BATCH_SIZE):
@@ -66,7 +66,7 @@ def get_medical_mnist(batch_size: int = BATCH_SIZE, val_ratio: float = 0.2):
     Medical dataset: Không có train/test sẵn, tự chia bằng random_split
     """
     cfg = DATASETS["medical"]
-    tf  = _medical_transform(cfg["img_size"])  # dùng transform riêng (có grayscale)
+    tf  = _base_transform(cfg["img_size"])
 
     full_ds = datasets.ImageFolder(root=MEDICAL_ROOT, transform=tf)
     # ImageFolder: đọc dữ liệu theo folder structure:
@@ -74,7 +74,7 @@ def get_medical_mnist(batch_size: int = BATCH_SIZE, val_ratio: float = 0.2):
 
     class_names = full_ds.classes  # lấy tên class từ folder
 
-    # chia train/test reproducible bằng random_split với seed cố định
+    # chia train/test
     generator  = torch.Generator().manual_seed(SEED)
     test_size  = int(val_ratio * len(full_ds))     # 20% làm test
     train_size = len(full_ds) - test_size

@@ -8,14 +8,18 @@ import os
 from config import DEVICE, EPOCHS, LEARNING_RATE, DATASETS
 
 def evaluate(model: nn.Module, loader: torch.utils.data.DataLoader):
-    """Tính accuracy trên tập dữ liệu"""
+    """
+    Đánh giá mô hình: tính tỷ lệ dự đoán đúng (accuracy) trên toàn bộ batch trong loader.
+
+    Không cập nhật trọng số; chỉ forward pass và so sánh argmax(logits) với nhãn thật.
+    """
     
     model.eval()  # chuyển model sang chế độ evaluation (tắt dropout, batchnorm ổn định)
     correct = total = 0  # biến đếm số dự đoán đúng và tổng số mẫu
 
     with torch.no_grad():  # tắt tính gradient
         for X, y in loader:
-            X, y = X.to(DEVICE), y.to(DEVICE)  # đưa dữ liệu lên GPU/CPU
+            X, y = X.to(DEVICE), y.to(DEVICE) 
             preds = model(X).argmax(dim=1)     # lấy class có xác suất cao nhất
 
             correct += (preds == y).sum().item()  # đếm số dự đoán đúng
@@ -35,8 +39,15 @@ def train_model(
     save_dir    : str   = "models",
 ):
     """
-    Train model và lưu trọng số tốt nhất (best test acc) vào save_dir.
-    Trả về (model đã load best weights, history).
+    Huấn luyện mô hình
+    - Dùng CrossEntropyLoss và tối ưu Adam.
+    - StepLR: giảm learning rate theo bước để fine-tune ở cuối quá trình.
+    - Sau mỗi epoch: tính loss tích lũy trên train, train_acc và test_acc.
+    - Luôn giữ và lưu ra đĩa bản sao state_dict có test_acc cao nhất (early-best checkpoint).
+    - Kết thúc: load lại best weights vào model trước khi trả về.
+
+    Trả về:
+        (model, history) với history gồm các list train_acc, test_acc, loss theo từng epoch.
     """
     print(f"\n{'='*62}")
     print(f"  Dataset : {dataset.upper():<10}  Variant : {variant.upper()}")
@@ -66,15 +77,16 @@ def train_model(
 
         for X, y in train_loader:
             X, y   = X.to(DEVICE), y.to(DEVICE)
+            # một bước SGD: forward -> loss -> đạo hàm ngược -> cập nhật tham số
             loss   = criterion(model(X), y)
-            optimizer.zero_grad()
+            optimizer.zero_grad()  # xóa gradient cũ
             loss.backward()
             optimizer.step()
-            total_loss += loss.item()
+            total_loss += loss.item()  # loss scalar của batch (để log, không phải trung bình)
 
-        scheduler.step()
+        scheduler.step()  # cập nhật learning rate theo lịch StepLR
 
-        train_acc = evaluate(model, train_loader)
+        train_acc = evaluate(model, train_loader)  # đo trên train (có thể cao hơn test nếu overfit)
         test_acc  = evaluate(model, test_loader)
         history["train_acc"].append(train_acc)
         history["test_acc"].append(test_acc)

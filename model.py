@@ -1,8 +1,17 @@
+"""
+Các biến thể kiến trúc CNN lấy cảm hứng từ LeNet-5 cho bài toán phân loại ảnh.
+
+- LeNet5: baseline cổ điển (Tanh, AvgPool).
+- LeNet5_Handwritten / LeNet5_Fashion / LeNet5_Medical: tùy biến độ sâu, dropout theo từng dataset.
+- LeNet5Improved: phiên bản “cải tiến chung” với ReLU, BatchNorm, MaxPool, Dropout.
+
+Khi chạy trực tiếp file này: in shape output và số tham số cho từng mô hình (tensor giả 32×32).
+"""
 import torch
 import torch.nn as nn
 
 
-#  1. LeNet-5 Baseline  (LeCun 1998)
+# 1. LeNet-5 Baseline (LeCun 1998)
 class LeNet5(nn.Module):
     """LeNet-5 gốc: Tanh + AvgPool. Dùng làm baseline so sánh."""
     def __init__(self, in_channels: int = 1, num_classes: int = 10):
@@ -23,16 +32,17 @@ class LeNet5(nn.Module):
         )
 
     def forward(self, x):
+        # x: (N, C, 32, 32) → logits (N, num_classes)
         return self.classifier(self.features(x))
 
-#  2. LeNet5_Handwritten
+# 2. LeNet5_Handwritten
 class LeNet5_Handwritten(nn.Module):
     """
     Thiết kế cho Handwritten MNIST :
-        - Filter 6→12 (tăng nhẹ so với gốc 6→16 để nhanh converge)
+        - Filter 6 -> 12
         - Thêm Dropout(0.3) trước FC cuối để kiểm soát overfit
-        - ReLU + BN + MaxPool từ Improved
-        - FC nhỏ: 120→84 giữ nguyên, không cần phình to
+        - ReLU + BN + MaxPool
+        - FC nhỏ: 120 -> 84 giữ nguyên, không cần phình to
     """
     def __init__(self, in_channels: int = 1, num_classes: int = 10):
         super().__init__()
@@ -53,14 +63,14 @@ class LeNet5_Handwritten(nn.Module):
         return self.classifier(self.features(x))
 
 
-#  3. LeNet5_Fashion 
+# 3. LeNet5_Fashion 
 class LeNet5_Fashion(nn.Module):
     """
     Thiết kế cho Fashion MNIST:
         - 3 conv layer
-        - Filter tăng mạnh: 32 → 64 → 128
+        - Filter tăng mạnh: 32 -> 64 -> 128
         - kernel 3x3 cho C2, C3 để học local texture chi tiết
-        - FC lớn: 512 → 256
+        - FC lớn: 512 -> 256
         - Dropout(0.5) sau mỗi FC lớn để chống overfit khi tăng capacity
         - padding=2 ở C1 giữ spatial info đầu vào
     """
@@ -93,14 +103,14 @@ class LeNet5_Fashion(nn.Module):
         return self.classifier(self.features(x))
 
 
-#  4. LeNet5_Medical
+# 4. LeNet5_Medical
 class LeNet5_Medical(nn.Module):
     """
     Thiết kế cho Medical MNIST:
       Vấn đề: 6 lớp ảnh y tế rất khác nhau về hình dạng
               (AbdomenCT vs BreastMRI vs CXR vs ChestCT vs Hand vs HeadCT)
               -> Baseline đã quá dư thừa capacity
-        - 2 conv với chỉ 4 → 8 filter
+        - 2 conv với chỉ 4 -> 8 filter
         - FC 32 node
         - Không Dropout (không cần do dataset quá dễ phân biệt)
         - BN + ReLU để training ổn định
@@ -123,11 +133,11 @@ class LeNet5_Medical(nn.Module):
         return self.classifier(self.features(x))
 
 
-#  5. LeNet-5 Improved (ReLU + BatchNorm + MaxPool + Dropout)
+# 5. LeNet-5 Improved (ReLU + BatchNorm + MaxPool + Dropout)
 class LeNet5Improved(nn.Module):
     """
     Improved chung: ReLU + BatchNorm + MaxPool + Dropout 0.4.
-    Filter 6->16 giữ nguyên.
+    Filter 6 -> 16 giữ nguyên.
     """
     def __init__(self, in_channels: int = 1, num_classes: int = 10):
         super().__init__()
@@ -149,7 +159,7 @@ class LeNet5Improved(nn.Module):
         return self.classifier(self.features(x))
 
 if __name__ == "__main__":
-    dummy = torch.zeros(2, 1, 32, 32)
+    dummy = torch.zeros(2, 1, 32, 32)  # batch 2, 1 kênh, 32×32
     configs = [
         (LeNet5,          10, "LeNet5 Baseline"),
         (LeNet5_Handwritten,  10, "LeNet5_Handwritten"),

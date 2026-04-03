@@ -1,18 +1,16 @@
 import torch
 
-#  Device
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-#  Training
-BATCH_SIZE   = 64
-EPOCHS       = 20
-LEARNING_RATE = 0.001
+# Siêu tham số huấn luyện mặc định
+BATCH_SIZE   = 64      # số mẫu mỗi batch khi lấy gradient
+EPOCHS       = 20      # số vòng lặp qua toàn bộ tập train
+LEARNING_RATE = 0.001  # learning rate khởi tạo cho Adam
 
-#  Paths
-DATA_ROOT    = "/kaggle/working"          # Handwritten MNIST / FashionMNIST download cache
+DATA_ROOT    = "/kaggle/working"
 MEDICAL_ROOT = "/kaggle/input/datasets/andrewmvd/medical-mnist"
 
-#  Dataset meta
+# Metadata theo từng dataset: số lớp, kích thước ảnh, kênh đầu vào, epochs/lr riêng, tên lớp (hiển thị)
 DATASETS = {
     "handwritten": {
         "num_classes" : 10,
